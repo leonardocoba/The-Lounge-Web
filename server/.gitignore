@@ -3,3 +3,5 @@ dist
 logs
 *. logs
 *.env
+serviceAccountKey.json
+the-lounge-68f0d-firebase-adminsdk-3458q-12fc85aed9.json

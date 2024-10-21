@@ -5,7 +5,12 @@
     "no-console": {
       "severity": "warning",
       "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
-    }
+    },
+    "no-var-requires": false,
+    "no-unused-variable": true,
+    "object-literal-sort-keys": false,
+    "interface-name": [true, "never-prefix"],
+    "max-line-length": [true, 120]
   },
   "jsRules": {}
 }

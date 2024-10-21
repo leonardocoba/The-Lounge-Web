@@ -1,18 +1,11 @@
-import React, { useEffect } from "react";
-import logo from "./logo.svg";
+import React from "react";
 import "./App.css";
-import socketIO from "socket.io-client";
-import { Socket } from "dgram";
-
-const WS = "http://localhost:8080";
+import { Create } from "./components/CreateButton";
 
 function App() {
-  useEffect(() => {
-    socketIO(WS);
-  }, []);
   return (
-    <div className="App">
-      <button>Start New Meeting</button>
+    <div className="App flex items-center justify-center w-screen h-screen">
+      <Create />
     </div>
   );
 }
