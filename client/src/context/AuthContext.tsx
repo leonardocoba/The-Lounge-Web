@@ -17,4 +17,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const user = useContext(AuthContext);
+  return user ? user.uid : null;
+};
