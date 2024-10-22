@@ -1,44 +1,26 @@
 import { Socket } from "socket.io";
-import db from "../firebase/admin"; // Import Firestore instance
+import { createRoomInFirestore } from "../models/rooms";
 
 export const roomHandler = (socket: Socket) => {
-  // Create Room with Room Name and User ID
   const createRoom = async (data: { roomName: string; userId: string }) => {
     const { roomName, userId } = data;
 
     try {
-      if (!roomName || !userId) {
-        socket.emit("create-room-error", {
-          error: "Invalid room name or user ID",
-        });
-        return;
-      }
+      // Call the rooms model to create a room in Firestore
+      const { roomId, roomName: createdRoomName } = await createRoomInFirestore(
+        {
+          roomName,
+          userId,
+        }
+      );
 
-      const userRef = db.collection("users").doc(userId);
-      const userDoc = await userRef.get();
-
-      if (!userDoc.exists) {
-        socket.emit("room-created-error", { error: "User not found" });
-        return;
-      }
-
-      // Create a new document in the 'rooms' collection
-      const roomRef = db.collection("rooms").doc();
-      const roomData = {
-        id: roomRef.id,
-        name: roomName,
-        owner: userId, // Use user ID as the owner
-        createdAt: new Date(),
-      };
-
-      await roomRef.set(roomData);
-
-      // Emit room creation success with room ID
-      socket.emit("room-created", { roomId: roomRef.id, roomName });
-      console.log(`Room "${roomName}" created by user with ID: ${userId}`);
+      socket.emit("room-created", { roomId, roomName: createdRoomName });
+      console.log(
+        `Room "${createdRoomName}" created by user with ID: ${userId}`
+      );
     } catch (error) {
       console.error("Error creating room in Firestore:", error);
-      // Emit error event to client
+
       socket.emit("create-room-error", { error: "Failed to create room" });
     }
   };

@@ -1,14 +1,32 @@
 import db from "../firebase/admin";
 
-// Create a room in Firestore
-export const createRoom = async (roomName: string, userId: string) => {
+export const createRoomInFirestore = async ({
+  roomName,
+  userId,
+}: {
+  roomName: string;
+  userId: string;
+}) => {
+  if (!roomName || !userId) {
+    throw new Error("Invalid room name or user ID");
+  }
+
+  // const userRef = db.collection("users").doc(userId);
+  // const userDoc = await userRef.get();
+
+  // if (!userDoc.exists) {
+  //   socket.emit("room-created-error", { error: "User not found" });
+  //   return;
+  // }
+  // Create a new document in the 'rooms' collection
   const roomRef = db.collection("rooms").doc();
+
   const roomData = {
     id: roomRef.id,
     name: roomName,
     createdBy: userId,
     createdAt: new Date(),
-    members: [userId],
+    members: [userId], // Add the creator as the first member
     isPrivate: false,
     settings: {
       allowScreenShare: true,
@@ -22,7 +40,8 @@ export const createRoom = async (roomName: string, userId: string) => {
   };
 
   await roomRef.set(roomData);
-  return roomRef.id;
+
+  return { roomId: roomRef.id, roomName };
 };
 
 // Get a room by ID
