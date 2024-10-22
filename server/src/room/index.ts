@@ -14,12 +14,11 @@ export const roomHandler = (socket: Socket) => {
         return;
       }
 
-      // Check if user exists in the 'users' collection
       const userRef = db.collection("users").doc(userId);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        socket.emit("create-room-error", { error: "User not found" });
+        socket.emit("room-created-error", { error: "User not found" });
         return;
       }
 
