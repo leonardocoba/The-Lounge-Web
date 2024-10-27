@@ -13,5 +13,5 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ stream }) => {
     }
   }, [stream]);
 
-  return <video ref={videoRef} autoPlay playsInline />;
+  return <video ref={videoRef} autoPlay playsInline muted={true} />;
 };

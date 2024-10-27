@@ -51,6 +51,39 @@ export const RoomProvider: React.FunctionComponent<{
     };
   }, [considerUserId]);
 
+  useEffect(() => {
+    if (!currentUser || !stream) return;
+
+    ws.on("user-joined", ({ peerId }) => {
+      const call = currentUser.call(peerId, stream);
+
+      call.on("stream", (remoteStream) => {
+        console.log("Received remote stream:", remoteStream);
+      });
+
+      call.on("error", (error) => {
+        console.error("Call error:", error);
+      });
+    });
+
+    currentUser.on("call", (call) => {
+      call.answer(stream);
+
+      call.on("stream", (remoteStream) => {
+        console.log("Received remote stream:", remoteStream);
+      });
+
+      call.on("error", (error) => {
+        console.error("Call error:", error);
+      });
+    });
+
+    return () => {
+      ws.off("user-joined");
+      currentUser.off("call");
+    };
+  }, [currentUser, stream]);
+
   return (
     <RoomContext.Provider value={{ ws, currentUser, stream }}>
       {children}

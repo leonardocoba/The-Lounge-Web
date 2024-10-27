@@ -40,6 +40,7 @@ export const roomHandler = (socket: Socket) => {
 
       const participants = await getParticipantsFromRoom(roomId);
       console.log(participants);
+      socket.to(roomId).emit("user-joined", { peerId });
       socket.emit("get-users", { roomId, participants });
 
       console.log(`User ${peerId} joined room: ${roomId}`);
