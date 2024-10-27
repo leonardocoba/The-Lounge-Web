@@ -18,6 +18,7 @@ export const createRoomInFirestore = async ({
   //   socket.emit("room-created-error", { error: "User not found" });
   //   return;
   // }
+
   // Create a new document in the 'rooms' collection
   const roomRef = db.collection("rooms").doc();
 
@@ -39,7 +40,11 @@ export const createRoomInFirestore = async ({
     },
   };
 
+  // Set the initial room data
   await roomRef.set(roomData);
+
+  // 'activeParticipants' subcollection is created but remains empty
+  // No participants are added at this stage
 
   return { roomId: roomRef.id, roomName };
 };
@@ -52,3 +57,38 @@ export const getRoomById = async (roomId: string) => {
 };
 
 // Other room-related functions...
+// Add a participant's peerId to the room's subcollection
+export const addParticipantToRoom = async (roomId: string, peerId: string) => {
+  const participantRef = db
+    .collection("rooms")
+    .doc(roomId)
+    .collection("participants")
+    .doc(peerId);
+
+  await participantRef.set({ peerId });
+};
+
+// Remove a participant's peerId from the room's subcollection
+export const removeParticipantFromRoom = async (
+  roomId: string,
+  peerId: string
+) => {
+  const participantRef = db
+    .collection("rooms")
+    .doc(roomId)
+    .collection("participants")
+    .doc(peerId);
+
+  await participantRef.delete();
+};
+
+// Get all participant peerIds from a room's subcollection
+export const getParticipantsFromRoom = async (roomId: string) => {
+  const participantsSnap = await db
+    .collection("rooms")
+    .doc(roomId)
+    .collection("participants")
+    .get();
+
+  return participantsSnap.docs.map((doc) => doc.data().peerId);
+};

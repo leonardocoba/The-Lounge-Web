@@ -1,12 +1,20 @@
 import { Socket } from "socket.io";
-import { createRoomInFirestore } from "../models/rooms";
+import {
+  createRoomInFirestore,
+  addParticipantToRoom,
+  getParticipantsFromRoom,
+} from "../models/rooms";
+
+interface IRoomParams {
+  roomId: string;
+  peerId: string;
+}
 
 export const roomHandler = (socket: Socket) => {
   const createRoom = async (data: { roomName: string; userId: string }) => {
     const { roomName, userId } = data;
 
     try {
-      // Call the rooms model to create a room in Firestore
       const { roomId, roomName: createdRoomName } = await createRoomInFirestore(
         {
           roomName,
@@ -20,16 +28,27 @@ export const roomHandler = (socket: Socket) => {
       );
     } catch (error) {
       console.error("Error creating room in Firestore:", error);
-
       socket.emit("create-room-error", { error: "Failed to create room" });
     }
   };
+  const joinRoom = async ({ roomId, peerId }: IRoomParams) => {
+    try {
+      socket.join(roomId);
 
-  const joinRoom = () => {
-    console.log("User joined room");
+      await addParticipantToRoom(roomId, peerId);
+
+      const participants = await getParticipantsFromRoom(roomId);
+      console.log(participants);
+      socket.emit("get-users", { roomId, participants });
+
+      console.log(`User ${peerId} joined room: ${roomId}`);
+    } catch (error) {
+      console.error("Error joining room:", error);
+      socket.emit("join-room-error", { error: "Failed to join room" });
+    }
   };
 
-  // Listen for 'create-room' event with room data
+  // Listen for 'create-room' and 'join-room' events
   socket.on("create-room", createRoom);
   socket.on("join-room", joinRoom);
 };
