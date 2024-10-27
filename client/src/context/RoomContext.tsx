@@ -14,6 +14,7 @@ export const RoomProvider: React.FunctionComponent<{
 }> = ({ children }) => {
   const navigate = useNavigate();
   const considerUserId = useAuth();
+  const [stream, setStream] = useState<MediaStream>();
   const [currentUser, setCurrentUser] = useState<Peer | null>(null);
 
   const enterRoom = ({ roomId }: { roomId: string }) => {
@@ -32,16 +33,26 @@ export const RoomProvider: React.FunctionComponent<{
       console.warn("User ID is null. Unable to create a Peer instance.");
     }
 
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        setStream(stream);
+      })
+      .catch((error) => {
+        console.error("Error accessing media devices:", error);
+      });
+
     ws.on("room-created", enterRoom);
     ws.on("get-users", getUsers);
 
     return () => {
       ws.off("room-created", enterRoom);
+      ws.off("get-users", getUsers);
     };
   }, [considerUserId]);
 
   return (
-    <RoomContext.Provider value={{ ws, currentUser }}>
+    <RoomContext.Provider value={{ ws, currentUser, stream }}>
       {children}
     </RoomContext.Provider>
   );

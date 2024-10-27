@@ -3,9 +3,10 @@ import {
   createRoomInFirestore,
   addParticipantToRoom,
   getParticipantsFromRoom,
+  removeParticipantFromRoom,
 } from "../models/rooms";
 
-interface IRoomParams {
+interface RoomParams {
   roomId: string;
   peerId: string;
 }
@@ -31,7 +32,7 @@ export const roomHandler = (socket: Socket) => {
       socket.emit("create-room-error", { error: "Failed to create room" });
     }
   };
-  const joinRoom = async ({ roomId, peerId }: IRoomParams) => {
+  const joinRoom = async ({ roomId, peerId }: RoomParams) => {
     try {
       socket.join(roomId);
 
@@ -46,6 +47,22 @@ export const roomHandler = (socket: Socket) => {
       console.error("Error joining room:", error);
       socket.emit("join-room-error", { error: "Failed to join room" });
     }
+
+    socket.on("disconnect", async () => {
+      try {
+        await removeParticipantFromRoom(roomId, peerId);
+
+        const updatedParticipants = await getParticipantsFromRoom(roomId);
+
+        socket
+          .to(roomId)
+          .emit("get-users", { roomId, participants: updatedParticipants });
+
+        console.log(`User ${peerId} disconnected from room: ${roomId}`);
+      } catch (error) {
+        console.error("Error handling disconnect:", error);
+      }
+    });
   };
 
   // Listen for 'create-room' and 'join-room' events
