@@ -4,10 +4,10 @@ import { useContext, useEffect } from "react";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { Stream } from "stream";
 import { strictEqual } from "assert";
-
+import { PeerState } from "../context/peersReducers";
 export const Room = () => {
   const { id } = useParams();
-  const { ws, currentUser, stream } = useContext(RoomContext);
+  const { ws, currentUser, stream, peers } = useContext(RoomContext);
 
   useEffect(() => {
     if (currentUser)
@@ -20,6 +20,9 @@ export const Room = () => {
       Room id{id}
       <div>
         <VideoPlayer stream={stream} />
+        {Object.values(peers as PeerState).map((peer) => (
+          <VideoPlayer stream={peer.stream} />
+        ))}
       </div>
     </>
   );
