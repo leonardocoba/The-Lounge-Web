@@ -1,8 +1,15 @@
 import socketIOClient from "socket.io-client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useReducer,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import Peer from "peerjs";
 import { useAuth } from "./AuthContext";
+import { peerReducer } from "./peerReducers";
 
 const WS = "http://localhost:8080";
 export const RoomContext = createContext<null | any>(null);
@@ -16,6 +23,7 @@ export const RoomProvider: React.FunctionComponent<{
   const considerUserId = useAuth();
   const [stream, setStream] = useState<MediaStream>();
   const [currentUser, setCurrentUser] = useState<Peer | null>(null);
+  const [peers, dispatch] = useReducer(peerReducer, {});
 
   const enterRoom = ({ roomId }: { roomId: string }) => {
     console.log("Entered Room: ", roomId);
